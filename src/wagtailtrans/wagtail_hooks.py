@@ -46,7 +46,7 @@ if not get_wagtailtrans_setting('SYNC_TREE'):
     """Only load hooks when WAGTAILTRANS_SYNC_TREE is disabled"""
 
     @hooks.register('register_page_listing_buttons')
-    def page_translations_menu(page, page_perms, is_parent=False):
+    def page_translations_menu(page, page_perms, is_parent=False, next_url=None):
         if not hasattr(page, 'language'):
             return
 
@@ -59,6 +59,7 @@ if not get_wagtailtrans_setting('SYNC_TREE'):
             page=page,
             page_perms=page_perms,
             is_parent=is_parent,
+            next_url=next_url,
             priority=10
         )
 
@@ -107,7 +108,7 @@ def hide_non_canonical_languages(parent_page, pages, request):
 
 
 @hooks.register('register_page_listing_buttons')
-def edit_in_language_button(page, page_perms, is_parent=False):
+def edit_in_language_button(page, page_perms, is_parent=False, next_url=None):
     """Add ``Edit in`` button to the page explorer.
 
     When hiding all other translation except the canonical language, which is
@@ -125,6 +126,7 @@ def edit_in_language_button(page, page_perms, is_parent=False):
         page=page,
         page_perms=page_perms,
         is_parent=is_parent,
+        next_url=next_url,
         priority=10
     )
 
