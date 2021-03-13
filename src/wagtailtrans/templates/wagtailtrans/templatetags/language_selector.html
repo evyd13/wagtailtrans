@@ -3,12 +3,12 @@
 <ul class="language-selector">
     <li class="active-language">
         {% get_language_info for current_page.language.code as lang %}
-        <a href="{{ current_page.url }}">{{ lang.name_local }}</a>
+        <a href="{{ current_page.url }}">{{ lang.code }}</a>
     </li>
     {% for language, page in translations.items %}
     {% get_language_info for language.code as lang %}
     <li>
-        <a href="{{ page.url }}">{{ lang.name_local }}</a>
+        <a href="{{ page.url }}">{{ lang.code }}</a>
     </li>
     {% endfor %}
 </ul>
