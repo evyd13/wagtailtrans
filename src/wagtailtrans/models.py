@@ -324,16 +324,20 @@ def get_user_language(request):
     :param request: Request object
     :return: Language instance
     """
-    if hasattr(request, 'LANGUAGE_CODE'):
-        language = Language.objects.live().filter(code=request.LANGUAGE_CODE).first()
-        if language:
-            return language
-
     # Backwards-compatible lookup for the deprecation of Wagtails SiteMiddleware per 2.9
     if 'wagtail.core.middleware.SiteMiddleware' in settings.MIDDLEWARE:
         site = request.site
     else:
         site = Site.find_for_request(request)
+        
+    site_languages = SiteLanguages.for_site(site).get_languages()
+
+
+    if hasattr(request, 'LANGUAGE_CODE'):
+        language = Language.objects.live().filter(code=request.LANGUAGE_CODE).first()
+        if language in site_languages:
+            return language
+
 
     return Language.objects.default_for_site(site=site)
 
@@ -454,3 +458,10 @@ class SiteLanguages(BaseSetting):
     class Meta:
         verbose_name = _("Site languages")
         verbose_name_plural = _("Site languages")
+
+    def get_languages(self):
+        languages = []
+        languages.append(self.default_language)
+        for lang in self.other_languages.all():
+            languages.append(lang)
+        return languages
