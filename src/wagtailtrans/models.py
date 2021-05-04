@@ -360,6 +360,8 @@ class TranslatableSiteRootPage(Page):
         """
         language = get_user_language(request)
         candidates = TranslatablePage.objects.live().specific().child_of(self)
+        if len(candidates) == 1:
+            return redirect(candidates[0].url)
         try:
             translation = candidates.filter(language=language).get()
             return redirect(translation.url)
@@ -381,7 +383,14 @@ class TranslatableSiteRootPage(Page):
             get_wagtailtrans_setting('REDIRECT_UNPREFIXED_PATHS')
         ):
             language = get_user_language(request)
-            if language.is_default or get_wagtailtrans_setting('REDIRECT_UNPREFIXED_PATHS'):
+
+            if 'wagtail.core.middleware.SiteMiddleware' in settings.MIDDLEWARE:
+                site = request.site
+            else:
+                site = Site.find_for_request(request)
+                
+            default_language = Language.objects.default_for_site(site=site)
+            if language == default_language or get_wagtailtrans_setting('REDIRECT_UNPREFIXED_PATHS'):
                 if path_components:
                     if language.code != path_components[0]:
                         path_components.insert(0, language.code)
