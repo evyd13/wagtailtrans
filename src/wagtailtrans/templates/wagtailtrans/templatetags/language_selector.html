@@ -1,5 +1,6 @@
 {% load i18n %}
 
+{% if translations.items %}
 <ul class="language-selector">
     <li class="active-language">
         {% get_language_info for current_page.language.code as lang %}
@@ -12,3 +13,4 @@
     </li>
     {% endfor %}
 </ul>
+{% endif %}

@@ -170,6 +170,11 @@ class TranslatablePage(Page):
 
     def serve(self, request, *args, **kwargs):
         activate(self.language.code)
+        if get_wagtailtrans_setting('NO_PREFIX_FOR_DEFAULT_LANGUAGE'):
+            language = get_user_language(request)
+            if language.is_default:
+                if request.path.startswith("/{}".format(language.code)):
+                    return redirect(request.path[(len(language.code) + 1):])
         return super().serve(request, *args, **kwargs)
 
     def move(self, target, pos=None, suppress_sync=False, *args, **kwargs):
@@ -356,6 +361,25 @@ class TranslatableSiteRootPage(Page):
         except TranslatablePage.DoesNotExist:
             raise Http404
 
+    def route(self, request, path_components):
+        path_components = self.prepend_language_code_to_path_components(request, path_components)
+        return super().route(request, path_components)
+
+    def prepend_language_code_to_path_components(self, request, path_components):
+        """Prepend path_components with a language code if needed
+        :param request: Request object
+        :param path_components: List containing path elements
+        :return: List containing path elements
+        """
+        if get_wagtailtrans_setting('NO_PREFIX_FOR_DEFAULT_LANGUAGE'):
+            language = get_user_language(request)
+            if language.is_default:
+                if path_components:
+                    if language.code != path_components[0]:
+                        path_components.insert(0, language.code)
+                else:
+                    path_components = [language.code]
+        return path_components
 
 def page_permissions_for_user(self, user):
     """Patch for the page permissions adding our custom proxy
